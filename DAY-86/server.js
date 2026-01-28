@@ -3,8 +3,8 @@ const app = express()
 
 app.listen(4000)
 
-app.get('/', (req,res)=>{
-    res.send("Radha Radha")
+app.get('/', (request,response)=>{
+    response.send("Radha Radha")
 })
 
 app.get('/about',function(req,res){
