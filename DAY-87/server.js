@@ -14,7 +14,7 @@ app.use(express.json())
 app.post('/notes',(req,res)=>{
     console.log(req.body);
     notes.push(req.body)
-    res.send("Notes Created")
+    res.send("Notes Created........")
 })
 
 //get request-->for fetch notes/resources
