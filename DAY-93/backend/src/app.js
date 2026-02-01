@@ -1,8 +1,11 @@
 const express = require("express")//import express package
 const noteModel = require("./model/note.model")
+const cors = require("cors");
 //Server Created
 const app = express()
 
+//CORS middleware-->allows this server to handle req from different origins(like frontend apps) by adding appropriate header
+app.use(cors())
 //Middleware
 app.use(express.json())
 
