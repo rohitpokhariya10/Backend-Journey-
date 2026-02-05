@@ -235,6 +235,7 @@ body {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.09);
   transition: 0.2s ease;
+   position: relative;
 }
 
 .card:hover {
@@ -249,6 +250,7 @@ body {
   gap: 10px;
   align-items: flex-start;
   margin-bottom: 10px;
+ 
 }
 
 .cardTop h3 {
@@ -274,7 +276,25 @@ body {
   opacity: 0.9;
   transform: scale(1.02);
 }
-
+.iconEdit{
+  /* position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(-30%,-40%); */
+    border: none;
+  cursor: pointer;
+  background: rgba(255, 70, 70, 0.14);
+  color: #ff6b6b;
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: 0.2s ease;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+.iconEdit:hover {
+  opacity: 0.9;
+   transform: scale(1.02);
+  
+}
 .desc {
   font-size: 12px;
   opacity: 0.85;
@@ -286,6 +306,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .pill {
@@ -295,6 +316,7 @@ body {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   opacity: 0.9;
+  margin-right:0.5rem;
 }
 
 /* Empty state */
@@ -324,6 +346,47 @@ body {
   font-size: 12px;
 }
 
+.editInput {
+  width: 100%;
+  font-size: 1.1rem;          /* same as h3 */
+  font-weight: 600;
+  color: white;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  padding: 2px 0;
+  margin-bottom: 6px;
+
+ 
+}
+.editTextarea {
+  width: 100%;
+  min-height: 70px;
+
+  font-size: 0.95rem;        /* same as .desc */
+  line-height: 1.5;
+  color: white;
+
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+
+
+  margin-top: 4px;
+
+ 
+}
+.editInput::placeholder{
+  opacity: 0.7;
+  font-size: 1rem;
+}
+.editTextarea::placeholder{
+   opacity: 0.7;
+  font-size: 0.9rem;
+}
 /* ====== Responsive ====== */
 @media (max-width: 900px) {
   .main {

@@ -1,6 +1,7 @@
 const express = require("express")//import express package
 const noteModel = require("./model/note.model")
 const cors = require("cors");
+const path = require("path")
 //Server Created
 const app = express()
 
@@ -8,6 +9,9 @@ const app = express()
 app.use(cors())
 //Middleware
 app.use(express.json())
+
+app.use(express.static("./public"))
+
 
 // Api Name = /api/notes
 // API METHOD = POST
@@ -62,9 +66,9 @@ app.patch("/api/notes/:id", async (req,res)=>{
           const id =  req.params.id
           console.log(req.params);
           //destructuring krke req.body se description nikal rh hai
-          const {description} = req.body
+          const {title , description} = req.body
           //findByIdAndUpdate(id do , jo field update krni hai use object ke form me do)
-          const note = await noteModel.findByIdAndUpdate(id , {description})
+          const note = await noteModel.findByIdAndUpdate(id , {title , description})
           res.status(200).json({
             message:"Note description updated successfully",
             note
@@ -77,7 +81,14 @@ app.patch("/api/notes/:id", async (req,res)=>{
 
 
 
-
+//wildcard
+// "*" = koi bhi route jo upar match nahi hua
+// Server index.html bhej deta hai
+// Mostly SPA (React / frontend routing) ke liye use hota hai
+//__dirname = current file ka folder path
+app.use("*name" , (req,res)=>{
+    res.sendFile(path.join(__dirname,"..","index.html"))
+})
 
 
 

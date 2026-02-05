@@ -1,177 +1,256 @@
-import React, { useEffect, useMemo, useState } from "react";
-import axios from 'axios'
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 export default function Notes() {
-    const [notes, setNotes] = useState([
-   
-    ]);
+  // Notes list
+  const [notes, setNotes] = useState([]);
 
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [search, setSearch] = useState("");
+  // Create note states
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-    const filteredNotes = useMemo(() => {
-        const q = search.trim().toLowerCase();
-        if (!q) return notes;
+  // Edit note states
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  //react ko btana ki konsa note edit mode pe hai(kis note ke edit button me click kra hai)
+  const [editingNoteId, setEditingNoteId] = useState(null);
 
-        return notes.filter((n) => {
-            return (
-                n.title.toLowerCase().includes(q) ||
-                n.description.toLowerCase().includes(q)
-            );
-        });
-    }, [notes, search]);
+  // ---------------- FETCH NOTES ----------------
+  async function fetchNotes() {
+    try {
+      const response = await axios.get("http://localhost:3000/api/notes");
+      setNotes(response.data.note);
+    } catch (error) {
+      console.log("❌ Error:", error.message);
+    }
+  }
 
-    const handleAddNote = (e) => {
-        e.preventDefault();
+  useEffect(() => {
+    fetchNotes();
+  }, []);
 
-        if (!title.trim() || !description.trim()) {
-            alert("Title and Description both are required ✅");
-            return;
+  // ---------------- ADD NOTE ----------------
+  const handleAddNote = async (e) => {
+    e.preventDefault();
+
+    if (!title.trim() || !description.trim()) {
+      alert("Title and Description both are required");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/notes",
+        {
+          title: title.trim(),
+          description: description.trim(),
         }
+      );
 
-        const newNote = {
-            id: Date.now(),
-            title: title.trim(),
-            description: description.trim(),
-        };
+      const newNote = response.data.note;
+      setNotes((prev) => [newNote, ...prev]);
 
-        setNotes((prev) => [newNote, ...prev]);
-        setTitle("");
-        setDescription("");
-    };
+      setTitle("");
+      setDescription("");
+    } catch (error) {
+      console.log("❌ Error:", error.message);
+    }
+  };
 
-    const handleDelete = (id) => {
-        const ok = confirm("Delete this note?");
-        if (!ok) return;
+  // ---------------- DELETE NOTE ----------------
+  async function handleDelete(noteId) {
+    await axios.delete(`http://localhost:3000/api/notes/${noteId}`);
 
-        setNotes((prev) => prev.filter((n) => n.id !== id));
-    };
-
-    useEffect(() => {
-        async function  fetchNotes(){
-         try{
-             const response =  await  axios.get("http://localhost:3000/api/notes")
-          setNotes(response.data.note)
-         }
-         catch(error){
-            onsole.log("❌ Error:", error.message);
-         }
-        }
-        fetchNotes()
-           
-    }, []);
-
-
-    return (
-        <div className="app">
-            {/* Top Header */}
-            <header className="topbar">
-                <div className="brand">
-                    <div className="logo">N</div>
-                    <div>
-                        <h1>Notes</h1>
-                        <p>Simple notes UI (dummy data) • Just for practising Frontend and Backend Integration</p>
-                    </div>
-                </div>
-
-                <div className="searchBox">
-                    <input
-                        type="text"
-                        placeholder="Search notes..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-
-                </div>
-            </header>
-
-            {/* Main */}
-            <main className="main">
-                {/* Left Panel (Add Note Form) */}
-                <section className="panel">
-                    <div className="panelHeader">
-                        <h2>Create Note</h2>
-                        {/* <span className="badge">Frontend Only</span> */}
-                    </div>
-
-                    <form className="form" onSubmit={handleAddNote}>
-                        <label>
-                            Title
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="Enter title..."
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
-
-
-                        <label>
-                            Description
-                        </label>
-                        <textarea
-                            placeholder="Enter description..."
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-
-
-                        <button className="btn" type="submit">
-                            + Add Note
-                        </button>
-                    </form>
-                </section>
-
-                {/* Right Panel (Notes List) */}
-                <section className="notesSection">
-                    <div className="notesHeader">
-                        <h2>Your Notes</h2>
-                        <p>
-                            Showing <b>{filteredNotes.length}</b> of <b>{notes.length}</b>
-                        </p>
-                    </div>
-
-                    {filteredNotes.length === 0 ? (
-                        <div className="emptyState">
-                            <h3>No notes found 😅</h3>
-                            <p>Try searching something else or create a new note.</p>
-                        </div>
-                    ) : (
-                        <div className="grid">
-                            
-                                {
-                                    filteredNotes.map((note) => (
-                                       
-                                        <div className="card" key={note._id }>
-                                            {/* backend se jo note ki id ati hai vo _id ke name se ati hai */}
-                                           { console.log(note)}
-                                            <div className="cardTop">
-                                                <h3 title={note.title}>{note.title}</h3>
-
-                                                <button
-                                                    className="iconBtn"
-                                                    onClick={() => handleDelete(note._id )}
-                                                    title="Delete Note"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-
-                                            <p className="desc">{note.description}</p>
-
-                                            <div className="cardFooter">
-                                                <span className="pill">Title</span>
-                                                <span className="pill">Description</span>
-                                            </div>
-                                        </div>
-                                    ))
-                                }
-
-                            
-                        </div>
-                    )}
-                </section>
-            </main>
-        </div>
+    setNotes((prevNotes) =>
+      prevNotes.filter((note) => note._id !== noteId)
     );
+  }
+
+  // ---------------- START EDIT ----------------
+  function startEdit(note) {
+    console.log(note);
+    
+    setEditingNoteId(note._id);
+    //user jab edit title pe click krega tu use purana title description dikhega fir edit krega use
+    setEditTitle(note.title);
+    setEditDescription(note.description);
+  }
+
+  // ---------------- SAVE EDIT ----------------
+ async function handleEdit(noteId) {
+  if (!editTitle.trim() || !editDescription.trim()) {
+    alert("Title & Description empty nahi ho sakte");
+    return;
+  }
+
+  try {
+    await axios.patch(
+      `http://localhost:3000/api/notes/${noteId}`,
+      {
+        title: editTitle,
+        description: editDescription,
+      }
+    );
+
+    
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note._id === noteId
+          ? {
+              ...note,
+              title: editTitle,
+              description: editDescription,
+            }
+          : note
+      )
+    );
+
+    setEditingNoteId(null);
+  } catch (err) {
+    console.log(err.response?.data || err.message);
+  }
+}
+
+
+  return (
+    <div className="app">
+      {/* Top Header */}
+      <header className="topbar">
+        <div className="brand">
+          <div className="logo">N</div>
+          <div>
+            <h1>Notes</h1>
+            <p>
+              Simple notes UI (dummy data) • Just for practising Frontend and
+              Backend Integration
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="main">
+        {/* Left Panel (Add Note Form) */}
+        <section className="panel">
+          <div className="panelHeader">
+            <h2>Create Note</h2>
+          </div>
+
+          <form className="form" onSubmit={handleAddNote}>
+            <label>Title</label>
+            <input
+              type="text"
+              placeholder="Enter title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+
+            <label>Description</label>
+            <textarea
+              placeholder="Enter description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+
+            <button className="btn" type="submit">
+              + Add Note
+            </button>
+          </form>
+        </section>
+
+        {/* Right Panel (Notes List) */}
+        <section className="notesSection">
+          <div className="notesHeader">
+            <h2>Your Notes</h2>
+            <p>
+              Showing <b>{notes.length}</b> of <b>{notes.length}</b>
+            </p>
+          </div>
+
+          {notes.length === 0 ? (
+            <div className="emptyState">
+              <h3>No notes found 😅</h3>
+              <p>Try creating a new note.</p>
+            </div>
+          ) : (
+            <div className="grid">
+              {
+              notes.map((note) => (
+                <div className="card" key={note._id}>
+                  <div className="cardTop">
+                    {
+                    editingNoteId === note._id ? (
+                      <input
+                        className="editInput"
+                        placeholder="Enter edit title..."
+                        value={editTitle}
+                        onChange={(e) =>
+                          setEditTitle(e.target.value)
+                        }
+                      />
+                    ) : (
+                      <h3 title={note.title}>{note.title}</h3>
+                    )
+                    }
+
+                    <button
+                      className="iconBtn"
+                      onClick={() => handleDelete(note._id)}
+                      title="Delete Note"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {
+                  editingNoteId === note._id ? (
+                    <textarea
+                      className="editTextarea"
+                      placeholder="Enter edit description..."
+                      value={editDescription}
+                      onChange={(e) =>
+                      setEditDescription(e.target.value)
+                      }
+                    />
+                  ) : (
+                    <p className="desc">{note.description}</p>
+                  )
+                  }
+
+                  <div className="cardFooter">
+                    <div>
+                      <span className="pill">Title</span>
+                      <span className="pill">Description</span>
+                    </div>
+
+                    <button
+                      className="iconEdit"
+                      onClick={() =>
+                        editingNoteId === note._id
+                          ? handleEdit(note._id)
+                          : startEdit(note)
+                      }
+                      title={
+                        editingNoteId === note._id
+                          ? "Save Note"
+                          : "Edit Note"
+                      }
+                    >
+                      <i
+                        className={
+                          editingNoteId === note._id
+                            ? "ri-save-line"
+                            : "ri-edit-line"
+                        }
+                      ></i>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
+  );
 }
