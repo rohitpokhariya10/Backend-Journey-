@@ -18,7 +18,7 @@ export default function Notes() {
   // ---------------- FETCH NOTES ----------------
   async function fetchNotes() {
     try {
-      const response = await axios.get("http://localhost:3000/api/notes");
+      const response = await axios.get("https://backend-journey-1-ivt1.onrender.com/api/notes");
       setNotes(response.data.note);
     } catch (error) {
       console.log("❌ Error:", error.message);
@@ -40,7 +40,7 @@ export default function Notes() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/notes",
+        "https://backend-journey-1-ivt1.onrender.com/api/notes",
         {
           title: title.trim(),
           description: description.trim(),
@@ -59,7 +59,7 @@ export default function Notes() {
 
   // ---------------- DELETE NOTE ----------------
   async function handleDelete(noteId) {
-    await axios.delete(`http://localhost:3000/api/notes/${noteId}`);
+    await axios.delete(`https://backend-journey-1-ivt1.onrender.com/api/notes/${noteId}`);
 
     setNotes((prevNotes) =>
       prevNotes.filter((note) => note._id !== noteId)
@@ -85,7 +85,7 @@ export default function Notes() {
 
   try {
     await axios.patch(
-      `http://localhost:3000/api/notes/${noteId}`,
+      `https://backend-journey-1-ivt1.onrender.com/api/notes/${noteId}`,
       {
         title: editTitle,
         description: editDescription,
