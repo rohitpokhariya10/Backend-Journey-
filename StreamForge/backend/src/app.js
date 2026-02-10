@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../../frontend/dist")));
   
   // Catch-all route → Send React app
-  app.get("*", (req, res) => {
+  app.get("*name", (req, res) => {
     res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
   });
 }
