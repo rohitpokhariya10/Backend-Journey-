@@ -64,7 +64,7 @@ export default function VideoConverter() {
       setVideoUrl("");
 
       // STEP 2 → AUTO DOWNLOAD FROM SERVER
-      const downloadUrl = `https://backend-journey-2-crlo.onrender.com/api/video/download/${data.fileName}`;
+      const downloadUrl = `https://backend-journey-2-crlo.onrender.com/api/videos/download/${data.fileName}`;
 
       const link = document.createElement("a");
       link.href = downloadUrl;

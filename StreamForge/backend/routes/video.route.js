@@ -17,7 +17,7 @@ router.post("/convert", async (req, res) => {
     const downloadDir = path.join(__dirname, "../downloads");
 
     if (!fs.existsSync(downloadDir)) {
-      fs.mkdirSync(downloadDir);
+      fs.mkdirSync(downloadDir, { recursive: true });
     }
 
     const fileName = `video_${Date.now()}.mp4`;
@@ -44,7 +44,7 @@ router.post("/convert", async (req, res) => {
     });
 
   } catch (err) {
-    console.log("❌ ERROR:", err);
+    console.log("❌ FULL ERROR:", err.stderr || err.message);
     res.status(500).json({ message: "Download failed" });
   }
 });
@@ -53,12 +53,11 @@ router.get("/download/:fileName", (req, res) => {
   const fileName = req.params.fileName;
   const filePath = path.join(__dirname, "../downloads", fileName);
 
-  res.download(filePath, fileName, (err) => {
-    if (err) {
-      console.log("Download error ❌", err);
-      res.status(500).json({ message: "File not found" });
-    }
-  });
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: "File not found" });
+  }
+
+  res.download(filePath);
 });
 
 module.exports = router;
