@@ -17,7 +17,13 @@ export default function VideoConverter() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
+  const [fileSize, setFileSize] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+
+  // ========================================
+  // API BASE URL - CHANGE THIS FOR DEPLOYMENT
+  // ========================================
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -38,42 +44,79 @@ export default function VideoConverter() {
       return;
     }
 
+    // Basic YouTube URL validation
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+    if (!youtubeRegex.test(videoUrl.trim())) {
+      setError("Please enter a valid YouTube URL");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccess(false);
+    setFileName("");
+    setFileSize("");
 
     try {
-      // STEP 1 → Convert
-      const response = await fetch(
-        "https://backend-journey-2-crlo.onrender.com/api/videos/convert",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ videoUrl }),
-        }
-      );
+      console.log("🚀 Starting download request...");
+      console.log("📍 API URL:", `${API_BASE_URL}/api/convert`);
+
+      // STEP 1 → Convert/Download Video
+      const response = await fetch(`${API_BASE_URL}/api/convert`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ videoUrl: videoUrl.trim() }),
+      });
+
+      console.log("📡 Response status:", response.status);
 
       const data = await response.json();
+      console.log("📦 Response data:", data);
 
       if (!response.ok) {
+        throw new Error(data.message || data.error || "Download failed");
+      }
+
+      if (!data.success) {
         throw new Error(data.message || "Download failed");
       }
 
-      setFileName(data.fileName);
+      // Extract fileName from response
+      const downloadedFileName = data.data?.fileName || data.fileName;
+      const downloadedFileSize = data.data?.fileSizeMB || data.fileSizeMB || "";
+
+      if (!downloadedFileName) {
+        throw new Error("No file name received from server");
+      }
+
+      setFileName(downloadedFileName);
+      setFileSize(downloadedFileSize);
       setSuccess(true);
-      setVideoUrl("");
+
+      console.log("✅ Download successful:", downloadedFileName);
 
       // STEP 2 → AUTO DOWNLOAD FROM SERVER
-      const downloadUrl = `https://backend-journey-2-crlo.onrender.com/api/videos/download/${data.fileName}`;
+      const downloadUrl = `${API_BASE_URL}/api/download/${downloadedFileName}`;
+      console.log("📥 Download URL:", downloadUrl);
 
+      // Trigger download
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.setAttribute("download", data.fileName);
+      link.setAttribute("download", downloadedFileName);
       document.body.appendChild(link);
       link.click();
       link.remove();
+
+      // Clear input after successful download
+      setTimeout(() => {
+        setVideoUrl("");
+      }, 1000);
+
     } catch (err) {
-      setError(err.message || "Server error");
+      console.error("❌ Error:", err);
+      setError(err.message || "Failed to download video. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -91,7 +134,7 @@ export default function VideoConverter() {
         msOverflowStyle: "none",
       }}
     >
-      <style jsx>{`
+      <style>{`
         div::-webkit-scrollbar {
           display: none;
         }
@@ -152,9 +195,7 @@ export default function VideoConverter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? "hover:bg-gray-700"
-                    : "hover:bg-gray-100"
+                  darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
                 }`}
               >
                 <Github
@@ -208,9 +249,7 @@ export default function VideoConverter() {
         {/* Converter Card */}
         <div
           className={`rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 transition-colors duration-300 ${
-            darkMode
-              ? "bg-gray-800 border border-gray-700"
-              : "bg-white"
+            darkMode ? "bg-gray-800 border border-gray-700" : "bg-white"
           }`}
         >
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -227,7 +266,7 @@ export default function VideoConverter() {
                 <input
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="Paste your video URL here..."
+                  placeholder="https://www.youtube.com/watch?v=..."
                   className={`w-full px-5 py-4 pr-12 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all ${
                     darkMode
                       ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:bg-gray-650"
@@ -244,8 +283,9 @@ export default function VideoConverter() {
             </div>
 
             <button
+              type="submit"
               disabled={loading || !videoUrl.trim()}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-semibold hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 transition-all"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-semibold hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all"
             >
               {loading ? (
                 <>
@@ -255,7 +295,7 @@ export default function VideoConverter() {
               ) : (
                 <>
                   <Download className="w-5 h-5" />
-                  Download
+                  Download Video
                 </>
               )}
             </button>
@@ -281,21 +321,30 @@ export default function VideoConverter() {
                     darkMode ? "text-green-300" : "text-green-900"
                   }`}
                 >
-                  Download Complete!
+                  Download Started! 🎉
                 </p>
                 <p
                   className={`text-sm mt-1 ${
                     darkMode ? "text-green-400" : "text-green-700"
                   }`}
                 >
-                  File: <span className="font-mono">{fileName}</span>
+                  File: <span className="font-mono text-xs">{fileName}</span>
                 </p>
+                {fileSize && (
+                  <p
+                    className={`text-xs mt-1 ${
+                      darkMode ? "text-green-500" : "text-green-600"
+                    }`}
+                  >
+                    Size: {fileSize} MB
+                  </p>
+                )}
                 <p
-                  className={`text-xs mt-1 ${
+                  className={`text-xs mt-2 ${
                     darkMode ? "text-green-500" : "text-green-600"
                   }`}
                 >
-                  Thanks for visiting
+                  Check your downloads folder 📂
                 </p>
               </div>
             </div>
@@ -321,7 +370,7 @@ export default function VideoConverter() {
                     darkMode ? "text-red-300" : "text-red-900"
                   }`}
                 >
-                  Error
+                  Download Failed
                 </p>
                 <p
                   className={`text-sm mt-1 ${
@@ -364,6 +413,20 @@ export default function VideoConverter() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Footer Note */}
+        <div className="mt-8 text-center">
+          <p
+            className={`text-sm ${
+              darkMode ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
+            Currently connected to:{" "}
+            <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
+              {API_BASE_URL}
+            </code>
+          </p>
         </div>
       </main>
     </div>
