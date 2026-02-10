@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static("./public"))
 // API Routes
 const videoRoutes = require("../routes/video.route");
-app.use("/api/video", videoRoutes);
+app.use("/api/videos", videoRoutes);
 
 // Serve frontend build
 app.use(express.static(path.join(__dirname, "../frontend/dist")));

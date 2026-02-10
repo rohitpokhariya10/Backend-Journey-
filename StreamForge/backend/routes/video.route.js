@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const YTDlpWrap = require("yt-dlp-wrap").default;
+
+const ytDlpWrap = new YTDlpWrap();
 
 router.post("/convert", async (req, res) => {
   const { videoUrl } = req.body;
@@ -21,41 +23,34 @@ router.post("/convert", async (req, res) => {
     const fileName = `video_${Date.now()}.mp4`;
     const outputPath = path.join(downloadDir, fileName);
 
-    const ytdlpPath = `"C:\\Users\\ROHIT\\Downloads\\yt-dlp.exe"`;
+    console.log("🚀 Downloading:", videoUrl);
 
-    // ✅ EXACT exe path
-    const ffmpegPath =
-      `"C:\\Users\\ROHIT\\Downloads\\ffmpeg-8.0.1-essentials_build\\ffmpeg-8.0.1-essentials_build\\bin\\ffmpeg.exe"`;
+    await ytDlpWrap.execPromise([
+      videoUrl,
+      "-f",
+      "bv*+ba/b",
+      "-o",
+      outputPath,
+      "--recode-video",
+      "mp4",
+      "--no-playlist",
+    ]);
 
-    // 🏆 GOLD COMMAND
-    const command = `${ytdlpPath} -f "bv*+ba/b" --ffmpeg-location ${ffmpegPath} --recode-video mp4 --no-playlist -o "${outputPath}" "${videoUrl}"`;
+    console.log("🔥 Done");
 
-    console.log("🚀 Running:");
-    console.log(command);
-
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.log("❌ ERROR:", stderr);
-        return res.status(500).json({ message: "Download failed" });
-      }
-
-      console.log("🔥 VIDEO + AUDIO PERFECT");
-
-      res.json({
-        message: "Downloaded successfully",
-        fileName,
-      });
+    res.json({
+      message: "Downloaded successfully",
+      fileName,
     });
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server error" });
+    console.log("❌ ERROR:", err);
+    res.status(500).json({ message: "Download failed" });
   }
 });
 
 router.get("/download/:fileName", (req, res) => {
   const fileName = req.params.fileName;
-
   const filePath = path.join(__dirname, "../downloads", fileName);
 
   res.download(filePath, fileName, (err) => {
