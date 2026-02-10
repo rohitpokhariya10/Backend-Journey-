@@ -5,26 +5,33 @@ const fs = require("fs");
 const YTDlpWrap = require("yt-dlp-wrap").default;
 
 
-// ⭐ binary path jaha download hoga
-const ytDlpPath = path.join(__dirname, "../yt-dlp");
+// ========================================
+// yt-dlp SETUP (CRASH SAFE)
+// ========================================
+const binaryPath = path.join(__dirname, "../yt-dlp");
 
-// ⭐ create instance
-const ytDlpWrap = new YTDlpWrap(ytDlpPath);
+const ytDlpWrap = new YTDlpWrap(binaryPath);
 
-
-// ⭐ DOWNLOAD yt-dlp if not exist
+// download binary when server starts
 (async () => {
-  if (!fs.existsSync(ytDlpPath)) {
-    console.log("⬇ Downloading yt-dlp binary...");
-    await YTDlpWrap.downloadFromGithub(ytDlpPath);
-    console.log("✅ yt-dlp ready");
+  try {
+    if (!fs.existsSync(binaryPath)) {
+      console.log("⬇ Downloading yt-dlp binary...");
+      await YTDlpWrap.downloadFromGithub(binaryPath);
+      console.log("✅ yt-dlp ready");
+    } else {
+      console.log("✅ yt-dlp already exists");
+    }
+  } catch (err) {
+    console.log("❌ yt-dlp setup failed");
+    console.log(err.message);
   }
 })();
 
 
-// =============================
-// POST convert
-// =============================
+// ========================================
+// POST → convert
+// ========================================
 router.post("/convert", async (req, res) => {
   const { videoUrl } = req.body;
 
@@ -55,22 +62,23 @@ router.post("/convert", async (req, res) => {
       "--no-playlist",
     ]);
 
-    console.log("🔥 Done");
+    console.log("🔥 Download completed");
 
     res.json({
       message: "Downloaded successfully",
       fileName,
     });
+
   } catch (err) {
-    console.log("❌ ERROR:", err);
+    console.log("❌ ERROR:", err.message);
     res.status(500).json({ message: "Download failed" });
   }
 });
 
 
-// =============================
-// GET download
-// =============================
+// ========================================
+// GET → download
+// ========================================
 router.get("/download/:fileName", (req, res) => {
   const fileName = req.params.fileName;
   const filePath = path.join(__dirname, "../downloads", fileName);
