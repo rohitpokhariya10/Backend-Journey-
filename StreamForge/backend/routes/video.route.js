@@ -1,21 +1,18 @@
+
+
 const express = require("express");
 const router = express.Router();
 const path = require("path");
 const fs = require("fs");
 const YTDlpWrap = require("yt-dlp-wrap").default;
 
-// create instance
-const ytDlpWrap = new YTDlpWrap();
+// ⭐ IMPORTANT
+// use global yt-dlp (render server)
+const ytDlpWrap = new YTDlpWrap("yt-dlp");
 
-// 🔥 VERY IMPORTANT FOR RENDER
-// download binary automatically
-ytDlpWrap
-  .downloadFromGithub()
-  .then(() => console.log("✅ yt-dlp ready"))
-  .catch(() => console.log("❌ yt-dlp download failed"));
 
 // =============================
-// POST → convert & download
+// POST → convert
 // =============================
 router.post("/convert", async (req, res) => {
   const { videoUrl } = req.body;
@@ -58,6 +55,7 @@ router.post("/convert", async (req, res) => {
     res.status(500).json({ message: "Download failed" });
   }
 });
+
 
 // =============================
 // GET → download file
