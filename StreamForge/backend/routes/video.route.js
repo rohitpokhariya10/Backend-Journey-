@@ -1,18 +1,29 @@
-
-
 const express = require("express");
 const router = express.Router();
 const path = require("path");
 const fs = require("fs");
 const YTDlpWrap = require("yt-dlp-wrap").default;
 
-// ⭐ IMPORTANT
-// use global yt-dlp (render server)
-const ytDlpWrap = new YTDlpWrap("yt-dlp");
+
+// ⭐ binary path jaha download hoga
+const ytDlpPath = path.join(__dirname, "../yt-dlp");
+
+// ⭐ create instance
+const ytDlpWrap = new YTDlpWrap(ytDlpPath);
+
+
+// ⭐ DOWNLOAD yt-dlp if not exist
+(async () => {
+  if (!fs.existsSync(ytDlpPath)) {
+    console.log("⬇ Downloading yt-dlp binary...");
+    await YTDlpWrap.downloadFromGithub(ytDlpPath);
+    console.log("✅ yt-dlp ready");
+  }
+})();
 
 
 // =============================
-// POST → convert
+// POST convert
 // =============================
 router.post("/convert", async (req, res) => {
   const { videoUrl } = req.body;
@@ -58,7 +69,7 @@ router.post("/convert", async (req, res) => {
 
 
 // =============================
-// GET → download file
+// GET download
 // =============================
 router.get("/download/:fileName", (req, res) => {
   const fileName = req.params.fileName;
