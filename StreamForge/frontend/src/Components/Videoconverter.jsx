@@ -45,7 +45,7 @@ export default function VideoConverter() {
     try {
       // STEP 1 → Convert
       const response = await fetch(
-        "http://localhost:3000/api/video/convert",
+        "https://backend-journey-2-crlo.onrender.com/api/videos/convert",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ export default function VideoConverter() {
       setVideoUrl("");
 
       // STEP 2 → AUTO DOWNLOAD FROM SERVER
-      const downloadUrl = `http://localhost:3000/api/video/download/${data.fileName}`;
+      const downloadUrl = `https://backend-journey-2-crlo.onrender.com/api/video/download/${data.fileName}`;
 
       const link = document.createElement("a");
       link.href = downloadUrl;
