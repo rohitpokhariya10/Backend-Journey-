@@ -59,7 +59,7 @@ catch(error){
 }
 
 })
-
+//GET /api/auth/get-me
 authRouter.get('/get-me', async (req, res) => {
     try {
         const token = req.cookies.JWT_TOKEN;//client ki req se token nikala
@@ -96,6 +96,30 @@ authRouter.get('/get-me', async (req, res) => {
     }
 });
 
+//POST /    api/auth/login
+authRouter.post("/login", async (req,res)=>{
+    const {email, password} = req.body
+    const user = await userModel.findOne({email})
+    if(!user){
+        return res.status(404).json({
+            message:"user doesnot exist"
+        })
+    }
+    const hashPassword = crypto.createHash("md5").update(password).digest("hex")
+    if(hashPassword !=  user.password){
+        return res.status(401).json({
+            message:"Invalid password"
+        })
+    }
+    const token = jwt.sign(
+        {id:user._id},
+        process.env.JWT_SECRET
+    )
+    res.cookie("JWT_TOKEN",token)
+    res.status(201).json({
+        message:"user login successfully"
+    })
+})
 
 
 
