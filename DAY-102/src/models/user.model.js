@@ -22,6 +22,6 @@ const userSchema = new mongoose.Schema({
 })
 
 
-const userModel = mongoose.model("Day-102", userSchema)
+const userModel = mongoose.model("user", userSchema)
 
 module.exports = userModel
